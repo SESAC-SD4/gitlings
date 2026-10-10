@@ -212,6 +212,23 @@ func watchOne(ex *exercise.Exercise) *exercise.Exercise {
 	}
 }
 
+// termCols는 터미널 너비를 반환한다. 감지 실패 시 기본값 60.
+func termCols() int {
+	w, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil || w < 20 {
+		return 60
+	}
+	return w
+}
+
+// sep는 char를 n개 이어 붙인 문자열을 반환한다.
+func sep(char string, n int) string {
+	if n < 1 {
+		return ""
+	}
+	return strings.Repeat(char, n)
+}
+
 func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hint string) {
 	p, _ := progress.Load()
 	all := exercises.All()
@@ -222,67 +239,68 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 		}
 	}
 
+	cols := termCols()
+	inner := cols - 2 // 양쪽 여백 1칸씩
+
 	fmt.Print(ansiClear)
 
-	fmt.Printf("%s══════════════════════════════════════════════════════════%s\n", ansiBold, ansiReset)
-	fmt.Printf("  gitlings-ko   ✅ %d  ⬜ %d\n", passed, len(all)-passed)
-	fmt.Printf("%s══════════════════════════════════════════════════════════%s\n\n", ansiBold, ansiReset)
+	// 헤더
+	fmt.Printf("%s%s%s\n", ansiBold, sep("═", cols), ansiReset)
+	fmt.Printf("  gitlings-ko   통과 %d  미완료 %d\n", passed, len(all)-passed)
+	fmt.Printf("%s%s%s\n\n", ansiBold, sep("═", cols), ansiReset)
 
+	// 작업 폴더
 	home, _ := os.UserHomeDir()
 	displayDir := strings.Replace(workDir, home, "~", 1)
-	fmt.Printf("  📁 %s%s%s\n\n", ansiCyan, displayDir, ansiReset)
+	fmt.Printf("  [%s%s%s]\n\n", ansiCyan, displayDir, ansiReset)
 
-	fmt.Printf("  %s━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n", ansiBold, ansiReset)
-	fmt.Printf("  %s%s%s  (%d / %d)\n", ansiBold, ex.Name, ansiReset, ex.ID, len(all))
-	fmt.Printf("  %s━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%s\n\n", ansiBold, ansiReset)
+	// 문제 제목
+	title := fmt.Sprintf("  %s  (%d/%d)", ex.Name, ex.ID, len(all))
+	fmt.Printf("%s%s%s\n", ansiBold, sep("─", cols), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiBold, title, ansiReset)
+	fmt.Printf("%s%s%s\n\n", ansiBold, sep("─", cols), ansiReset)
 
+	// 문제 설명
 	for _, line := range strings.Split(ex.Desc, "\n") {
 		fmt.Printf("  %s\n", line)
 	}
 	fmt.Println()
 
-	fmt.Printf("  %s──────────────────────────────────────────────────────%s\n", ansiGray, ansiReset)
+	// 채점 결과
+	fmt.Printf("%s%s%s\n", ansiGray, sep("─", inner), ansiReset)
 	if result.Passed {
-		fmt.Printf("  %s✅ 통과!%s\n", ansiGreen+ansiBold, ansiReset)
+		fmt.Printf("%s통과!%s\n", ansiGreen+ansiBold, ansiReset)
 	} else if result.Message != "" {
-		msgLines := strings.Split(result.Message, "\n")
-		for i, line := range msgLines {
-			if i == 0 {
-				fmt.Printf("  %s%s%s\n", ansiRed, line, ansiReset)
-			} else {
-				fmt.Printf("  %s\n", line)
-			}
+		for _, line := range strings.Split(result.Message, "\n") {
+			fmt.Printf("%s%s%s\n", ansiRed, line, ansiReset)
 		}
 	}
-	fmt.Printf("  %s──────────────────────────────────────────────────────%s\n", ansiGray, ansiReset)
+	fmt.Printf("%s%s%s\n", ansiGray, sep("─", inner), ansiReset)
 
+	// 힌트
 	if hint != "" {
 		fmt.Println()
-		fmt.Printf("  %s💡 힌트:%s\n", ansiYellow+ansiBold, ansiReset)
+		fmt.Printf("%s[힌트]%s\n", ansiYellow+ansiBold, ansiReset)
 		for _, line := range strings.Split(hint, "\n") {
-			fmt.Printf("  %s%s%s\n", ansiYellow, line, ansiReset)
+			fmt.Printf("%s%s%s\n", ansiYellow, line, ansiReset)
 		}
 	}
 
+	// 푸터
 	fmt.Println()
 	if result.Passed {
-		hasNext := exercises.ByID(ex.ID+1) != nil
-		if hasNext {
-			fmt.Printf("  %s[n]%s 다음 문제  %s[p]%s 이전  %s[l]%s 목록  %s[q]%s 종료\n",
-				ansiBold, ansiReset, ansiBold, ansiReset, ansiBold, ansiReset, ansiBold, ansiReset)
+		if exercises.ByID(ex.ID+1) != nil {
+			fmt.Printf("[n]다음  [p]이전  [l]목록  [q]종료\n")
 		} else {
-			fmt.Printf("  🎉 모든 문제 완료!  %s[l]%s 목록  %s[q]%s 종료\n",
-				ansiBold, ansiReset, ansiBold, ansiReset)
+			fmt.Printf("모든 문제 완료!  [l]목록  [q]종료\n")
 		}
 	} else {
-		hintText := ""
+		hintKey := ""
 		if len(ex.Hints) > 0 {
-			hintText = fmt.Sprintf("  %s[h]%s 힌트", ansiBold, ansiReset)
+			hintKey = "[h]힌트  "
 		}
-		fmt.Printf("  %s[r]%s 초기화%s  %s[n]%s 다음  %s[l]%s 목록  %s[q]%s 종료   %s● 감지 중%s\n",
-			ansiBold, ansiReset, hintText,
-			ansiBold, ansiReset, ansiBold, ansiReset, ansiBold, ansiReset,
-			ansiGray, ansiReset)
+		fmt.Printf("[r]초기화  %s[n]다음  [l]목록  [q]종료   %s감지중%s\n",
+			hintKey, ansiGray, ansiReset)
 	}
 }
 
