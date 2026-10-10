@@ -1,8 +1,12 @@
-git pull만 하면 "갈라진 이력을 어떻게 합칠지 설정하라"는 에러가 납니다.
-이 에러 메시지를 읽어 보세요. 해결 방법이 힌트로 나와 있습니다.
+git pull을 실행해 보세요.
+· mac에서 "fatal: Need to specify how to reconcile divergent branches." 에러가 나면
+  다음 힌트로 넘어가세요.
+· Windows(Git Bash)에서 편집기(VSCode 등)가 열리면 그냥 저장 후 닫으면 됩니다.
 
-git pull에 옵션을 붙이면 병합 방식을 지정할 수 있습니다.
---no-rebase 옵션은 merge 방식으로 합칩니다.
+mac에서 fatal 에러가 났다면, pull 방식을 한 번 설정해야 합니다:
+  git config --global pull.rebase false
+  그 다음 다시:
+  git pull
 
-git pull --no-rebase
-git push origin main
+마지막으로 원격에 올립니다:
+  git push origin main

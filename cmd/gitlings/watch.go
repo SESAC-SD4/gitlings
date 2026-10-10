@@ -212,27 +212,8 @@ func watchOne(ex *exercise.Exercise) *exercise.Exercise {
 	}
 }
 
-// termCols는 터미널 너비를 반환한다. 감지 실패 시 기본값 60.
-func termCols() int {
-	w, _, err := term.GetSize(int(os.Stdout.Fd()))
-	if err != nil || w < 20 {
-		return 60
-	}
-	return w
-}
-
-// line은 ASCII char 하나를 n개 반복한 문자열을 반환한다.
-// Unicode 박스 문자는 터미널마다 너비가 달라 사용하지 않는다.
-func line(char byte, n int) string {
-	if n < 1 {
-		return ""
-	}
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = char
-	}
-	return string(b)
-}
+const divLong = "------------------------------------------------------------"
+const divShort = "----------------------------------------"
 
 func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hint string) {
 	p, _ := progress.Load()
@@ -244,14 +225,12 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 		}
 	}
 
-	cols := termCols()
-
 	fmt.Print(ansiClear)
 
 	// 헤더
-	fmt.Printf("%s%s%s\n", ansiBold, line('=', cols), ansiReset)
-	fmt.Printf("  gitlings-ko   pass:%d  todo:%d\n", passed, len(all)-passed)
-	fmt.Printf("%s%s%s\n", ansiBold, line('=', cols), ansiReset)
+	fmt.Printf("%sgitlings-ko%s   pass:%d  todo:%d\n",
+		ansiBold, ansiReset, passed, len(all)-passed)
+	fmt.Println(divLong)
 	fmt.Println()
 
 	// 작업 폴더
@@ -260,9 +239,8 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 	fmt.Printf("  %s%s%s\n\n", ansiCyan, displayDir, ansiReset)
 
 	// 문제 제목
-	fmt.Printf("%s%s%s\n", ansiBold, line('-', cols), ansiReset)
 	fmt.Printf("%s  %s  (%d/%d)%s\n", ansiBold, ex.Name, ex.ID, len(all), ansiReset)
-	fmt.Printf("%s%s%s\n", ansiBold, line('-', cols), ansiReset)
+	fmt.Println(divShort)
 	fmt.Println()
 
 	// 문제 설명
@@ -272,7 +250,7 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 	fmt.Println()
 
 	// 채점 결과
-	fmt.Printf("%s%s%s\n", ansiGray, line('-', cols), ansiReset)
+	fmt.Println(divShort)
 	if result.Passed {
 		fmt.Printf("%s  PASS!%s\n", ansiGreen+ansiBold, ansiReset)
 	} else if result.Message != "" {
@@ -280,7 +258,7 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 			fmt.Printf("  %s%s%s\n", ansiRed, l, ansiReset)
 		}
 	}
-	fmt.Printf("%s%s%s\n", ansiGray, line('-', cols), ansiReset)
+	fmt.Println(divShort)
 
 	// 힌트
 	if hint != "" {

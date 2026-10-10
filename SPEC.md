@@ -137,7 +137,10 @@ git 명령을 실행하면 된다. 키: `h`=힌트 `n`=다음 `p`=이전 `r`=초
 - 상황: 내가 단어를 추가해 커밋. 그사이 "짝"이 `rules.md`를 고쳐 origin에 먼저 push → 내 push가 거절된다
 - 할 일: 짝의 커밋을 받아 합친 뒤 push
 - 통과: 로컬 main == origin/main · 내 커밋과 짝의 커밋 둘 다 포함 (merge든 rebase든 통과)
-- ⚠️ **확인된 사실 (git 2.50, 2026-10-11)**: pull 방식 설정이 없으면 갈라진 이력에서 `git pull`이 `fatal: Need to specify how to reconcile divergent branches.`로 실패한다. setup에서 이 설정을 **넣지 않는다** — 학생이 이 메시지를 만나는 것이 수업 내용이다. 힌트 2단계에서 `git pull --no-rebase`를 알려 준다
+- ⚠️ **D28 확인**: Git for Windows 인스톨러가 기본으로 `pull.rebase=false`를 시스템 설정에 넣는다(git-for-windows/build-extra installer/install.iss 3267~3268행). 따라서:
+  - **Windows(Git Bash)**: `git pull`이 바로 merge를 시도. 편집기(core.editor = `code --wait`)가 열릴 수 있음
+  - **mac**: `pull.rebase` 미설정이면 `fatal: Need to specify how to reconcile divergent branches.` 발생
+  - setup에서 이 설정을 **넣지 않는다**. desc.txt·hints.txt가 두 경우를 모두 안내. check는 merge·rebase 모두 통과
 
 ### 선택 ★
 
