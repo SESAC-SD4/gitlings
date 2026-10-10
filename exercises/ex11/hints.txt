@@ -1,0 +1,8 @@
+git pull만 하면 "갈라진 이력을 어떻게 합칠지 설정하라"는 에러가 납니다.
+이 에러 메시지를 읽어 보세요. 해결 방법이 힌트로 나와 있습니다.
+
+git pull에 옵션을 붙이면 병합 방식을 지정할 수 있습니다.
+--no-rebase 옵션은 merge 방식으로 합칩니다.
+
+git pull --no-rebase
+git push origin main

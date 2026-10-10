@@ -1,0 +1,12 @@
+작업 중인 변경을 임시로 치워두는 명령이 있습니다.
+"숨기다, 보관하다"는 뜻의 영어 단어를 생각해 보세요.
+
+사용할 명령: git stash, git switch, git stash pop
+
+git stash
+git switch main
+# rules.md 오타 수정
+git add rules.md
+git commit -m "rules.md 오타 수정"
+git switch new-word
+git stash pop

@@ -171,3 +171,17 @@ gitlings help
 ## 열린 질문 (제작 중 생기면 여기에 추가)
 
 - 문제 수가 늘 수 있게 번호 체계를 어떻게 둘지
+
+---
+
+## 구현 중 결정사항 (강사 확인 후 반영)
+
+1. **번호 체계**: 13개 이후 추가 시 14, 15... 순번을 이어감. 슬러그(`14-cherry-pick`)가 실질 식별자. 중간 삽입 시 기존 슬러그를 유지하고 번호만 조정. → 특별한 이슈 없으면 그대로 진행.
+
+2. **표식 파일 방식**: SPEC §3에서 `.gitlings_id` 파일을 `.git/info/exclude`에 등록하도록 명시함. 구현에서는 이 방식을 채택. 단 ex01처럼 `.git`이 없는 문제에서는 `check` 실행 시 `.git`이 생겼을 때 자동으로 exclude에 추가하도록 처리함.
+
+3. **check의 workDir 감지 우선순위**: (1) 현재 경로가 `~/gitlings-work/<slug>/` 패턴에 맞으면 슬러그로 식별 → (2) `.gitlings_id` 파일 → (3) `last_started` fallback.
+
+4. **ex07 setup이 --hard 상태**: setup 자체가 규칙 위반 커밋을 만든 상태이므로, `check`를 실행하면 "커밋이 있고 staged도 없음 → --hard처럼 보임"이라는 메시지가 뜸. 학생이 setup 직후 check를 실행하면 "--hard 옵션을 쓴 것 같습니다"라는 안내가 나오는데, 이는 혼란스러울 수 있음. → 문제 설명에서 먼저 `gitlings check`를 실행하지 말고 `git reset --soft HEAD~1`부터 시도하도록 안내 추가를 고려.
+
+5. **ex11 git pull 동작**: git 2.50에서 확인된 것처럼 갈라진 이력에서 `git pull` 시 `fatal: Need to specify how to reconcile divergent branches.` 에러가 발생함. 모범 풀이는 `git pull --no-rebase`. rebase 방식도 허용 (로컬 main == origin/main 조건만 확인).

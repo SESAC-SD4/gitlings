@@ -1,0 +1,9 @@
+Git은 HEAD가 이동한 기록을 모두 저장합니다.
+git reflog로 이 기록을 볼 수 있습니다.
+날리기 전 커밋의 해시를 찾아 보세요.
+
+사용할 명령: git reflog, git reset --hard [해시]
+
+git reflog
+# 목록에서 reset 전 커밋 해시를 찾으세요 (예: abc1234)
+git reset --hard abc1234

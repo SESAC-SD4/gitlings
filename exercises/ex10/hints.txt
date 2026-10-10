@@ -1,0 +1,9 @@
+git merge 후 충돌이 생기면 파일에 충돌 표시가 나타납니다.
+"<<<<<<", "=======", ">>>>>>>" 사이에서 남길 내용을 고르고, 표시를 모두 지우세요.
+
+사용할 명령: git merge, 편집기로 충돌 해결, git add, git commit
+
+git merge partner
+# words.md를 열어 충돌 표시 제거 후 "표범"만 남기기
+git add words.md
+git commit -m "충돌 해결: 표범 선택"

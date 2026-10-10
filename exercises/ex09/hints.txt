@@ -1,0 +1,11 @@
+브랜치를 만들고 이동하는 명령이 있습니다.
+git switch 명령을 사용해 보세요.
+
+사용할 명령: git switch -c, git add, git commit, git switch main, git merge
+
+git switch -c new-word
+# words.md에 단어 추가 (예: 3. 표범)
+git add words.md
+git commit -m "단어 '표범' 추가"
+git switch main
+git merge new-word
