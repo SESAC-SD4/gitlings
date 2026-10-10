@@ -24,11 +24,26 @@ func main() {
 
 	args := os.Args[1:]
 	if len(args) == 0 {
-		runList()
+		runWatch(0)
+		return
+	}
+
+	// `gitlings 3` — 숫자만 오면 watch mode로 해당 문제 시작
+	if n, err := strconv.Atoi(args[0]); err == nil {
+		runWatch(n)
 		return
 	}
 
 	switch args[0] {
+	case "watch":
+		id := 0
+		if len(args) >= 2 {
+			n, err := strconv.Atoi(args[1])
+			if err == nil {
+				id = n
+			}
+		}
+		runWatch(id)
 	case "list":
 		runList()
 	case "start":
@@ -53,7 +68,7 @@ func main() {
 		runHelp()
 	default:
 		fmt.Printf("알 수 없는 명령: %s\n", args[0])
-		fmt.Println("사용 가능한 명령: list, start, check, hint, reset, help")
+		fmt.Println("사용 가능한 명령: watch, list, start, check, hint, reset, help")
 		os.Exit(1)
 	}
 }
@@ -61,6 +76,32 @@ func main() {
 func baseDir() string {
 	home, _ := os.UserHomeDir()
 	return filepath.Join(home, "gitlings-work")
+}
+
+// writeMarker는 작업 폴더에 .gitlings_id 파일을 쓰고
+// .git이 있으면 .git/info/exclude에 등록한다.
+func writeMarker(id int, workDir string, g *git.Git) {
+	idFile := filepath.Join(workDir, ".gitlings_id")
+	os.WriteFile(idFile, []byte(strconv.Itoa(id)), 0644)
+	if _, err := os.Stat(filepath.Join(workDir, ".git")); err == nil {
+		g.AddExclude(".gitlings_id")
+	}
+}
+
+// doResetExercise는 작업 폴더와 관련 디렉토리를 삭제하고 setup을 다시 실행한다.
+func doResetExercise(ex *exercise.Exercise, workDir string) {
+	os.RemoveAll(workDir)
+	os.RemoveAll(workDir + ".git-remote")
+	os.RemoveAll(workDir + ".partner")
+	hintFile := filepath.Join(baseDir(), fmt.Sprintf(".hint_%d", ex.ID))
+	os.Remove(hintFile)
+
+	g := git.New(workDir)
+	if err := ex.Setup(workDir, g); err != nil {
+		fmt.Printf("❌ setup 오류: %v\n", err)
+		os.Exit(1)
+	}
+	writeMarker(ex.ID, workDir, g)
 }
 
 func runList() {
@@ -84,7 +125,7 @@ func runList() {
 		fmt.Printf("  %s   %s%s\n", status, ex.Name, optional)
 	}
 	fmt.Println()
-	fmt.Println("  시작: gitlings start <번호>   예) gitlings start 1")
+	fmt.Println("  시작(watch mode): gitlings <번호>   예) gitlings 1")
 	fmt.Println("  채점: gitlings check")
 	fmt.Println("  힌트: gitlings hint")
 	fmt.Println()
@@ -99,7 +140,6 @@ func runStart(id int) {
 
 	workDir := filepath.Join(baseDir(), ex.Slug)
 
-	// 이미 있으면 확인
 	if _, err := os.Stat(workDir); err == nil {
 		fmt.Printf("⚠️  %s 폴더가 이미 있습니다.\n", workDir)
 		fmt.Print("   덮어쓸까요? (y/N) ")
@@ -109,15 +149,9 @@ func runStart(id int) {
 			fmt.Println("   취소했습니다.")
 			return
 		}
-		if err := os.RemoveAll(workDir); err != nil {
-			fmt.Printf("❌ 폴더 삭제 실패: %v\n", err)
-			os.Exit(1)
-		}
-		// bare 원격도 정리
-		bareDir := workDir + ".git-remote"
-		os.RemoveAll(bareDir)
-		partnerDir := workDir + ".partner"
-		os.RemoveAll(partnerDir)
+		os.RemoveAll(workDir)
+		os.RemoveAll(workDir + ".git-remote")
+		os.RemoveAll(workDir + ".partner")
 	}
 
 	g := git.New(workDir)
@@ -126,20 +160,8 @@ func runStart(id int) {
 		fmt.Printf("❌ setup 오류: %v\n", err)
 		os.Exit(1)
 	}
+	writeMarker(id, workDir, g)
 
-	// 마커: .git/info/exclude에 .gitlings_id 추가
-	// (.git이 있는 경우만)
-	if _, err := os.Stat(filepath.Join(workDir, ".git")); err == nil {
-		idFile := filepath.Join(workDir, ".gitlings_id")
-		os.WriteFile(idFile, []byte(strconv.Itoa(id)), 0644)
-		g.AddExclude(".gitlings_id")
-	} else {
-		// .git 없는 문제(ex01)는 파일만 만들어 둠
-		idFile := filepath.Join(workDir, ".gitlings_id")
-		os.WriteFile(idFile, []byte(strconv.Itoa(id)), 0644)
-	}
-
-	// 진행 상황 저장
 	p, _ := progress.Load()
 	p.LastStarted = id
 	p.Save()
@@ -161,7 +183,6 @@ func runStart(id int) {
 func currentExercise() (*exercise.Exercise, string) {
 	cwd, _ := os.Getwd()
 
-	// 현재 디렉토리가 ~/gitlings-work/<slug>인지 확인
 	base := baseDir()
 	if strings.HasPrefix(cwd, base+string(os.PathSeparator)) {
 		rel := cwd[len(base)+1:]
@@ -174,7 +195,6 @@ func currentExercise() (*exercise.Exercise, string) {
 		}
 	}
 
-	// .gitlings_id 파일로 찾기
 	idFile := filepath.Join(cwd, ".gitlings_id")
 	if data, err := os.ReadFile(idFile); err == nil {
 		if id, err := strconv.Atoi(strings.TrimSpace(string(data))); err == nil {
@@ -184,7 +204,6 @@ func currentExercise() (*exercise.Exercise, string) {
 		}
 	}
 
-	// last_started fallback
 	p, _ := progress.Load()
 	if p.LastStarted > 0 {
 		ex := exercises.ByID(p.LastStarted)
@@ -206,7 +225,6 @@ func runCheck() {
 	}
 
 	g := git.New(workDir)
-	// .git이 생겼으면 .gitlings_id를 exclude에 등록 (git status에 안 보이게)
 	if _, err := os.Stat(filepath.Join(workDir, ".git")); err == nil {
 		g.AddExclude(".gitlings_id")
 	}
@@ -225,7 +243,6 @@ func runCheck() {
 		p.MarkPassed(ex.ID)
 		p.Save()
 
-		// 다음 문제 안내
 		next := exercises.ByID(ex.ID + 1)
 		if next != nil {
 			fmt.Printf("   다음 문제: gitlings start %d\n", next.ID)
@@ -244,16 +261,11 @@ func runHint() {
 		os.Exit(1)
 	}
 
-	p, _ := progress.Load()
-	// hint_level은 진행 상황에 저장하지 않고 단순히 순서대로 보여줌
-	// 매 호출마다 다음 힌트를 보여주기 위해 별도 카운터 사용
-	// 간단히: .gitlings_hint_level 파일 사용
 	hintFile := filepath.Join(baseDir(), fmt.Sprintf(".hint_%d", ex.ID))
 	level := 0
 	if data, err := os.ReadFile(hintFile); err == nil {
 		level, _ = strconv.Atoi(strings.TrimSpace(string(data)))
 	}
-	_ = p
 
 	hints := ex.Hints
 	if len(hints) == 0 {
@@ -269,8 +281,6 @@ func runHint() {
 	}
 
 	fmt.Printf("\n💡 힌트 %d/%d:\n\n%s\n\n", level+1, len(hints), hints[level])
-
-	// 다음 레벨 저장
 	os.WriteFile(hintFile, []byte(strconv.Itoa(level+1)), 0644)
 	if level+1 < len(hints) {
 		fmt.Printf("   더 자세한 힌트: gitlings hint (아직 %d단계 남음)\n\n", len(hints)-level-1)
@@ -294,33 +304,7 @@ func runReset() {
 		return
 	}
 
-	// 작업 폴더 삭제 후 재생성
-	os.RemoveAll(workDir)
-	bareDir := workDir + ".git-remote"
-	os.RemoveAll(bareDir)
-	partnerDir := workDir + ".partner"
-	os.RemoveAll(partnerDir)
-
-	// 힌트 레벨 초기화
-	hintFile := filepath.Join(baseDir(), fmt.Sprintf(".hint_%d", ex.ID))
-	os.Remove(hintFile)
-
-	g := git.New(workDir)
-	if err := ex.Setup(workDir, g); err != nil {
-		fmt.Printf("❌ setup 오류: %v\n", err)
-		os.Exit(1)
-	}
-
-	// 마커 재생성
-	if _, err := os.Stat(filepath.Join(workDir, ".git")); err == nil {
-		idFile := filepath.Join(workDir, ".gitlings_id")
-		os.WriteFile(idFile, []byte(strconv.Itoa(ex.ID)), 0644)
-		g.AddExclude(".gitlings_id")
-	} else {
-		idFile := filepath.Join(workDir, ".gitlings_id")
-		os.WriteFile(idFile, []byte(strconv.Itoa(ex.ID)), 0644)
-	}
-
+	doResetExercise(ex, workDir)
 	fmt.Printf("\n✅ %s 문제가 초기화됐습니다.\n", ex.Name)
 	fmt.Printf("   cd %s\n\n", workDir)
 }
@@ -330,13 +314,23 @@ func runHelp() {
 gitlings-ko — 터미널에서 진짜 git으로 배우는 한국어 연습 문제
 
 사용법:
-  gitlings              문제 목록 보기
+  gitlings              watch mode 시작 (마지막 문제 또는 번호 선택)
+  gitlings <N>          N번 문제를 watch mode로 시작
+  gitlings watch [N]    watch mode 시작
   gitlings list         문제 목록 보기
-  gitlings start <N>    N번 문제 시작 (폴더 만들고 설명 출력)
+  gitlings start <N>    N번 문제 시작 (폴더 만들고 설명 출력, watch 없이)
   gitlings check        현재 문제 채점
   gitlings hint         힌트 보기 (3단계, 한 번에 하나씩)
   gitlings reset        현재 문제 초기화
   gitlings help         이 도움말
+
+watch mode 키:
+  h  힌트 보기
+  n  다음 문제
+  p  이전 문제
+  r  초기화
+  l  목록 보기
+  q  종료
 
 작업 폴더: ~/gitlings-work/
 진행 기록: ~/gitlings-work/.progress.json

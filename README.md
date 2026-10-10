@@ -9,48 +9,81 @@
 
 - **git 2.23 이상** (switch · restore 명령 지원)
   - mac: `brew install git` 또는 Xcode Command Line Tools
-  - Windows: https://git-scm.com/ 에서 설치
+  - Windows: https://git-scm.com/ 에서 설치 — **Git Bash 포함**
 - **Python·Go·Node 불필요** — 실행 파일이 이미 포함되어 있습니다.
 
 ---
 
 ## 빠른 시작
 
+터미널을 **두 개** 엽니다. 하나는 `gitlings` 실행용, 다른 하나는 git 명령용.
+
 ### macOS (zsh)
 
+**터미널 1 — gitlings 실행:**
 ```sh
 git clone https://github.com/...   # 강사가 URL 안내
 cd gitlings-ko
-./gitlings list
-./gitlings start 1
-# 안내에 따라 cd ~/gitlings-work/01-first-commit
-./gitlings check
+./gitlings          # watch mode 시작 (문제 번호 선택)
+# 또는 바로 시작:
+./gitlings 1
 ```
 
-### Windows (PowerShell)
+**터미널 2 — git 연습:**
+```sh
+cd ~/gitlings-work/01-first-commit
+git init
+git add words.md
+git commit -m "첫 커밋"
+# → 터미널 1에서 자동으로 채점됩니다 ✅
+```
 
-```powershell
+### Windows (Git Bash)
+
+> **Git Bash**: 시작 메뉴 → "Git Bash" 검색 후 실행  
+> **Defender 경고가 뜨면**: "추가 정보" 클릭 후 "그래도 실행" 선택
+
+**터미널 1 — gitlings 실행:**
+```sh
 git clone https://github.com/...   # 강사가 URL 안내
 cd gitlings-ko
-.\gitlings.exe list
-.\gitlings.exe start 1
-# 안내에 따라 cd ~/gitlings-work/01-first-commit
-.\gitlings.exe check
+./gitlings.exe          # watch mode 시작
+# 또는 바로 시작:
+./gitlings.exe 1
 ```
 
-> **Defender 경고가 뜨면**: "추가 정보" 클릭 후 "그래도 실행" 선택  
-> (서명되지 않은 파일이라 경고가 나옵니다. 강사 확인 파일입니다.)
+**터미널 2 — git 연습:**
+```sh
+cd ~/gitlings-work/01-first-commit
+git init
+git add words.md
+git commit -m "첫 커밋"
+# → 터미널 1에서 자동으로 채점됩니다 ✅
+```
 
 ---
 
-## 명령 정리
+## watch mode 키
+
+| 키 | 동작 |
+|----|------|
+| `h` | 힌트 보기 (3단계) |
+| `n` | 다음 문제 |
+| `p` | 이전 문제 |
+| `r` | 현재 문제 초기화 |
+| `l` | 목록 보기 |
+| `q` | 종료 |
+
+---
+
+## 보조 명령 (watch 없이 사용)
 
 | 명령 | 설명 |
 |------|------|
 | `gitlings list` | 문제 목록 · 통과 여부 |
-| `gitlings start <번호>` | N번 문제 시작 |
+| `gitlings start <번호>` | N번 문제 시작 (watch 없이) |
 | `gitlings check` | 현재 문제 채점 |
-| `gitlings hint` | 힌트 (3단계, 한 번에 하나씩) |
+| `gitlings hint` | 힌트 보기 |
 | `gitlings reset` | 현재 문제 초기화 |
 | `gitlings help` | 도움말 |
 

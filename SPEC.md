@@ -7,7 +7,7 @@
 
 **터미널에서 진짜 git으로 풀고 자동 채점되는 한국어 Git 연습 문제 세트.** rustlings·dockerlings 방식.
 
-- 대상: 한국 부트캠프 비전공 성인 30명. Windows(PowerShell)·mac(zsh) 혼재
+- 대상: 한국 부트캠프 비전공 성인 30명. Windows(Git Bash)·mac(zsh) 혼재
 - 쓰는 날: 10/14(수) Git 이틀차 마지막 정리 시간에 13문제를 한꺼번에 푼다
 - 학생이 이미 배운 것: 터미널 기초, `init·add·commit·status·log·diff`, `restore`·`restore --staged`·`commit --amend`, `.gitignore`·`rm --cached`, `remote·push`(gh 인증), 그리고 10/14 당일 `HEAD~`·`reset`·`revert`·`branch·switch·merge`·충돌·PR
 - 학생이 모르는 것: Python·Go 등 프로그래밍. **도구 내부를 몰라도 쓸 수 있어야 한다**
@@ -18,11 +18,11 @@
    - Go(1.25)로 빌드한 실행 파일을 저장소에 커밋한다
    - mac: arm64+amd64를 `lipo`로 합친 유니버설 바이너리 `gitlings` (실행 권한 비트 유지 확인)
    - Windows: `gitlings.exe` (amd64)
-   - 학생 명령: mac `./gitlings list` / Windows `.\gitlings.exe list`
+   - 학생 명령: mac `./gitlings` / Windows(Git Bash) `./gitlings.exe` — 명령 형식은 동일
 2. **진짜 git** — 시스템에 설치된 `git`을 호출한다. 시작할 때 `git --version`이 **2.23 이상**(switch·restore)인지 확인하고, 아니면 한국어로 안내
 3. **네트워크·GitHub 없음** — 원격이 필요한 문제는 로컬 bare 저장소를 가짜 원격(`origin`)으로 만든다
 4. **한국어** — 모든 안내·문제·힌트·채점 결과. 단 **폴더·파일 이름은 ASCII**(Windows 인코딩 사고 방지). 파일 *내용*은 한국어
-5. **Windows 콘솔 한글** — Windows에서는 시작 시 콘솔 출력 코드페이지를 UTF-8(65001)로 맞춘다(PowerShell 5.1에서 깨지지 않게). 실제 확인은 강사가 Windows에서 한다
+5. **Windows 콘솔 한글** — 학생은 Git Bash(mintty)를 사용하므로 UTF-8이 기본. 시작 시 `chcp 65001`은 구형 cmd/PowerShell에서 직접 실행할 경우를 위해 유지(깨지지 않는 정도면 충분). 실제 확인은 강사가 Windows에서 한다
 6. **연습 저장소는 gitlings 폴더 밖에 만든다** — 기본 `~/gitlings-work/NN-이름/`. 이유: 1번 문제(아직 저장소 아님)에서 학생이 `git status`를 치면 상위의 gitlings-ko 저장소를 잡아버린다
 7. **학생의 전역 git 설정에 의존하지 않는다** — 문제를 만들 때 필요한 커밋 작성자는 `-c user.name/-c user.email`로 넣는다. 학생에게 `user.name`이 없을 수도 있다(그 경우 안내 메시지)
 8. 기본 브랜치는 `main`. setup은 `init.defaultBranch` 설정과 무관하게 `main`을 만든다
@@ -30,17 +30,21 @@
 ## 3. 명령
 
 ```
-gitlings            = gitlings list
+gitlings [N]        watch mode 시작. N 생략 시 마지막 문제 또는 목록에서 선택
+gitlings watch [N]  같음
 gitlings list       문제 목록 · 통과 여부(✅/⬜) · ★는 선택
 gitlings start N    N번 문제의 상황을 ~/gitlings-work/NN-이름/ 에 만든다. 이미 있으면 덮어쓸지 묻는다
-                    → 문제 설명(무엇이 어떤 상태이고, 무엇을 하면 되는지)을 출력하고
-                       "cd ~/gitlings-work/NN-이름" 안내
+                    → 문제 설명을 출력하고 "cd ~/gitlings-work/NN-이름" 안내 (watch 없이)
 gitlings check      현재 폴더(또는 가장 최근 start한 문제)를 채점. 통과면 ✅ + 다음 문제 안내,
                     실패면 "무엇이 아직 아닌지"를 한국어로. 흔한 오답은 따로 알아보고 짚는다
 gitlings hint       힌트 한 단계씩 (문제당 3단계: 방향 → 명령 이름 → 거의 정답)
 gitlings reset      현재 문제를 처음 상태로 다시 만든다
 gitlings help
 ```
+
+**watch mode**: `gitlings`(또는 `gitlings N`)를 실행하면 문제 설명·채점 결과가 표시된 채로 대기하며,
+작업 폴더의 파일이 바뀌면 자동으로 재채점한다. 별도 터미널에서 `cd ~/gitlings-work/NN-이름` 후
+git 명령을 실행하면 된다. 키: `h`=힌트 `n`=다음 `p`=이전 `r`=초기화 `l`=목록 `q`=종료
 
 - 진행 상황은 `~/gitlings-work/.progress.json`에 저장
 - `check`는 **현재 폴더가 어느 문제인지** 알아야 한다 → 문제 폴더에 표식 파일을 두되, **git이 추적하지 않게** `.git/info/exclude`에 넣는다(학생의 `git status`에 보이지 않도록)
@@ -165,7 +169,7 @@ gitlings help
 
 - [ ] mac(이 Mac)에서 13문제 모두 테스트 통과 · 실제 터미널에서 `start → 풀이 → check` 손으로 1회 이상
 - [ ] `gitlings` · `gitlings.exe` 빌드되어 커밋됨 · 새 폴더에 clone해서 바로 실행되는지 확인
-- [ ] Windows 실행은 **강사가 확인** — 확인할 목록을 `WINDOWS_CHECK.md`에 적어 둔다 (콘솔 한글, 경로, `~` 해석, 실행 권한·Defender 반응)
+- [ ] Windows 실행은 **강사가 확인** — 확인할 목록을 `WINDOWS_CHECK.md`에 적어 둔다 (Git Bash 기준, 콘솔 한글, 경로, `~` 해석, 실행 권한·Defender 반응)
 - [ ] GitHub 원격 저장소 생성·공개는 **하지 않는다** (강사 승인 후 별도)
 
 ## 열린 질문 (제작 중 생기면 여기에 추가)
@@ -185,3 +189,7 @@ gitlings help
 4. **ex07 setup이 --hard 상태**: setup 자체가 규칙 위반 커밋을 만든 상태이므로, `check`를 실행하면 "커밋이 있고 staged도 없음 → --hard처럼 보임"이라는 메시지가 뜸. 학생이 setup 직후 check를 실행하면 "--hard 옵션을 쓴 것 같습니다"라는 안내가 나오는데, 이는 혼란스러울 수 있음. → 문제 설명에서 먼저 `gitlings check`를 실행하지 말고 `git reset --soft HEAD~1`부터 시도하도록 안내 추가를 고려.
 
 5. **ex11 git pull 동작**: git 2.50에서 확인된 것처럼 갈라진 이력에서 `git pull` 시 `fatal: Need to specify how to reconcile divergent branches.` 에러가 발생함. 모범 풀이는 `git pull --no-rebase`. rebase 방식도 허용 (로컬 main == origin/main 조건만 확인).
+
+6. **Watch mode 추가 (D27 이후)**: 기본 UX를 watch mode로 변경. `gitlings` (또는 `gitlings N`) 실행 시 문제 설명·채점 결과를 표시하고 파일 변경을 600ms 폴링으로 감지해 자동 재채점. `golang.org/x/term`으로 raw 터미널 단일 키 입력 처리.
+
+7. **D27 — Windows Git Bash 기준으로 전환**: Windows 학생이 PowerShell 대신 Git Bash(Git for Windows 내장 mintty)를 사용한다. 실행 명령이 `.\gitlings.exe` → `./gitlings.exe`로 통일. Git Bash는 UTF-8 기본이므로 `chcp 65001`은 구형 cmd/PowerShell 보조용으로만 유지.
