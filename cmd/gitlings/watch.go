@@ -221,12 +221,17 @@ func termCols() int {
 	return w
 }
 
-// sep는 char를 n개 이어 붙인 문자열을 반환한다.
-func sep(char string, n int) string {
+// line은 ASCII char 하나를 n개 반복한 문자열을 반환한다.
+// Unicode 박스 문자는 터미널마다 너비가 달라 사용하지 않는다.
+func line(char byte, n int) string {
 	if n < 1 {
 		return ""
 	}
-	return strings.Repeat(char, n)
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = char
+	}
+	return string(b)
 }
 
 func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hint string) {
@@ -240,49 +245,49 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 	}
 
 	cols := termCols()
-	inner := cols - 2 // 양쪽 여백 1칸씩
 
 	fmt.Print(ansiClear)
 
 	// 헤더
-	fmt.Printf("%s%s%s\n", ansiBold, sep("═", cols), ansiReset)
-	fmt.Printf("  gitlings-ko   통과 %d  미완료 %d\n", passed, len(all)-passed)
-	fmt.Printf("%s%s%s\n\n", ansiBold, sep("═", cols), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiBold, line('=', cols), ansiReset)
+	fmt.Printf("  gitlings-ko   pass:%d  todo:%d\n", passed, len(all)-passed)
+	fmt.Printf("%s%s%s\n", ansiBold, line('=', cols), ansiReset)
+	fmt.Println()
 
 	// 작업 폴더
 	home, _ := os.UserHomeDir()
 	displayDir := strings.Replace(workDir, home, "~", 1)
-	fmt.Printf("  [%s%s%s]\n\n", ansiCyan, displayDir, ansiReset)
+	fmt.Printf("  %s%s%s\n\n", ansiCyan, displayDir, ansiReset)
 
 	// 문제 제목
-	title := fmt.Sprintf("  %s  (%d/%d)", ex.Name, ex.ID, len(all))
-	fmt.Printf("%s%s%s\n", ansiBold, sep("─", cols), ansiReset)
-	fmt.Printf("%s%s%s\n", ansiBold, title, ansiReset)
-	fmt.Printf("%s%s%s\n\n", ansiBold, sep("─", cols), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiBold, line('-', cols), ansiReset)
+	fmt.Printf("%s  %s  (%d/%d)%s\n", ansiBold, ex.Name, ex.ID, len(all), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiBold, line('-', cols), ansiReset)
+	fmt.Println()
 
 	// 문제 설명
-	for _, line := range strings.Split(ex.Desc, "\n") {
-		fmt.Printf("  %s\n", line)
+	for _, l := range strings.Split(ex.Desc, "\n") {
+		fmt.Printf("  %s\n", l)
 	}
 	fmt.Println()
 
 	// 채점 결과
-	fmt.Printf("%s%s%s\n", ansiGray, sep("─", inner), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiGray, line('-', cols), ansiReset)
 	if result.Passed {
-		fmt.Printf("%s통과!%s\n", ansiGreen+ansiBold, ansiReset)
+		fmt.Printf("%s  PASS!%s\n", ansiGreen+ansiBold, ansiReset)
 	} else if result.Message != "" {
-		for _, line := range strings.Split(result.Message, "\n") {
-			fmt.Printf("%s%s%s\n", ansiRed, line, ansiReset)
+		for _, l := range strings.Split(result.Message, "\n") {
+			fmt.Printf("  %s%s%s\n", ansiRed, l, ansiReset)
 		}
 	}
-	fmt.Printf("%s%s%s\n", ansiGray, sep("─", inner), ansiReset)
+	fmt.Printf("%s%s%s\n", ansiGray, line('-', cols), ansiReset)
 
 	// 힌트
 	if hint != "" {
 		fmt.Println()
-		fmt.Printf("%s[힌트]%s\n", ansiYellow+ansiBold, ansiReset)
-		for _, line := range strings.Split(hint, "\n") {
-			fmt.Printf("%s%s%s\n", ansiYellow, line, ansiReset)
+		fmt.Printf("%s  [힌트]%s\n", ansiYellow+ansiBold, ansiReset)
+		for _, l := range strings.Split(hint, "\n") {
+			fmt.Printf("  %s%s%s\n", ansiYellow, l, ansiReset)
 		}
 	}
 
@@ -290,16 +295,16 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 	fmt.Println()
 	if result.Passed {
 		if exercises.ByID(ex.ID+1) != nil {
-			fmt.Printf("[n]다음  [p]이전  [l]목록  [q]종료\n")
+			fmt.Printf("  [n]다음  [p]이전  [l]목록  [q]종료\n")
 		} else {
-			fmt.Printf("모든 문제 완료!  [l]목록  [q]종료\n")
+			fmt.Printf("  모든 문제 완료!  [l]목록  [q]종료\n")
 		}
 	} else {
 		hintKey := ""
 		if len(ex.Hints) > 0 {
 			hintKey = "[h]힌트  "
 		}
-		fmt.Printf("[r]초기화  %s[n]다음  [l]목록  [q]종료   %s감지중%s\n",
+		fmt.Printf("  [r]초기화  %s[n]다음  [l]목록  [q]종료   %s(감지중)%s\n",
 			hintKey, ansiGray, ansiReset)
 	}
 }
