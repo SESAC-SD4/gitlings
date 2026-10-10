@@ -225,66 +225,70 @@ func drawWatch(ex *exercise.Exercise, workDir string, result exercise.Result, hi
 		}
 	}
 
-	fmt.Print(ansiClear)
+	var b strings.Builder
+	fmt.Fprint(&b, ansiClear)
 
 	// 헤더
-	fmt.Printf("%sgitlings-ko%s   pass:%d  todo:%d\n",
+	fmt.Fprintf(&b, "%sgitlings-ko%s   pass:%d  todo:%d\n",
 		ansiBold, ansiReset, passed, len(all)-passed)
-	fmt.Println(divLong)
-	fmt.Println()
+	fmt.Fprintln(&b, divLong)
+	fmt.Fprintln(&b)
 
 	// 작업 폴더
 	home, _ := os.UserHomeDir()
 	displayDir := strings.Replace(workDir, home, "~", 1)
-	fmt.Printf("  %s%s%s\n\n", ansiCyan, displayDir, ansiReset)
+	fmt.Fprintf(&b, "  %s%s%s\n\n", ansiCyan, displayDir, ansiReset)
 
 	// 문제 제목
-	fmt.Printf("%s  %s  (%d/%d)%s\n", ansiBold, ex.Name, ex.ID, len(all), ansiReset)
-	fmt.Println(divShort)
-	fmt.Println()
+	fmt.Fprintf(&b, "%s  %s  (%d/%d)%s\n", ansiBold, ex.Name, ex.ID, len(all), ansiReset)
+	fmt.Fprintln(&b, divShort)
+	fmt.Fprintln(&b)
 
 	// 문제 설명
 	for _, l := range strings.Split(ex.Desc, "\n") {
-		fmt.Printf("  %s\n", l)
+		fmt.Fprintf(&b, "  %s\n", l)
 	}
-	fmt.Println()
+	fmt.Fprintln(&b)
 
 	// 채점 결과
-	fmt.Println(divShort)
+	fmt.Fprintln(&b, divShort)
 	if result.Passed {
-		fmt.Printf("%s  PASS!%s\n", ansiGreen+ansiBold, ansiReset)
+		fmt.Fprintf(&b, "%s  PASS!%s\n", ansiGreen+ansiBold, ansiReset)
 	} else if result.Message != "" {
 		for _, l := range strings.Split(result.Message, "\n") {
-			fmt.Printf("  %s%s%s\n", ansiRed, l, ansiReset)
+			fmt.Fprintf(&b, "  %s%s%s\n", ansiRed, l, ansiReset)
 		}
 	}
-	fmt.Println(divShort)
+	fmt.Fprintln(&b, divShort)
 
 	// 힌트
 	if hint != "" {
-		fmt.Println()
-		fmt.Printf("%s  [힌트]%s\n", ansiYellow+ansiBold, ansiReset)
+		fmt.Fprintln(&b)
+		fmt.Fprintf(&b, "%s  [힌트]%s\n", ansiYellow+ansiBold, ansiReset)
 		for _, l := range strings.Split(hint, "\n") {
-			fmt.Printf("  %s%s%s\n", ansiYellow, l, ansiReset)
+			fmt.Fprintf(&b, "  %s%s%s\n", ansiYellow, l, ansiReset)
 		}
 	}
 
 	// 푸터
-	fmt.Println()
+	fmt.Fprintln(&b)
 	if result.Passed {
 		if exercises.ByID(ex.ID+1) != nil {
-			fmt.Printf("  [n]다음  [p]이전  [l]목록  [q]종료\n")
+			fmt.Fprintf(&b, "  [n]다음  [p]이전  [l]목록  [q]종료\n")
 		} else {
-			fmt.Printf("  모든 문제 완료!  [l]목록  [q]종료\n")
+			fmt.Fprintf(&b, "  모든 문제 완료!  [l]목록  [q]종료\n")
 		}
 	} else {
 		hintKey := ""
 		if len(ex.Hints) > 0 {
 			hintKey = "[h]힌트  "
 		}
-		fmt.Printf("  [r]초기화  %s[n]다음  [l]목록  [q]종료   %s(감지중)%s\n",
+		fmt.Fprintf(&b, "  [r]초기화  %s[n]다음  [l]목록  [q]종료   %s(감지중)%s\n",
 			hintKey, ansiGray, ansiReset)
 	}
+
+	// raw 모드에서는 \n이 줄 맨 앞으로 돌아가지 않으므로 \r\n으로 바꿔 출력한다.
+	fmt.Print(strings.ReplaceAll(b.String(), "\n", "\r\n"))
 }
 
 func hintAt(ex *exercise.Exercise, level int) string {
