@@ -14,78 +14,57 @@
 
 ---
 
-## 빠른 시작
+## 준비: 터미널 두 개
 
-터미널을 **두 개** 엽니다. 하나는 `gitlings` 실행용, 다른 하나는 git 명령용.
+| | 터미널 1 — 문제 화면 | 터미널 2 — git 명령 치는 곳 |
+| --- | --- | --- |
+| Windows | Windows Terminal에서 **Git Bash** 탭 | 같은 창에 **Git Bash** 탭 하나 더 (`Ctrl+Shift+T` 또는 탭 옆 `∨`에서 Git Bash) |
+| mac | iTerm 또는 터미널 창 | 새 탭(`Cmd+T`) |
 
-### macOS (zsh)
-
-**터미널 1 — gitlings 실행:**
-```sh
-git clone https://github.com/...   # 강사가 URL 안내
-cd gitlings-ko
-./gitlings          # watch mode 시작 (문제 번호 선택)
-# 또는 바로 시작:
-./gitlings 1
-```
-
-**터미널 2 — git 연습:**
-```sh
-cd ~/gitlings-work/01-first-commit
-git init
-git add words.md
-git commit -m "첫 커밋"
-# → 터미널 1에서 자동으로 채점됩니다 ✅
-```
-
-### Windows (Git Bash)
-
-> **Git Bash**: 시작 메뉴 → "Git Bash" 검색 후 실행  
+> Windows에서는 PowerShell 탭이 아니라 **Git Bash** 탭이어야 합니다. 프롬프트에 `MINGW64`가 보이면 맞습니다.  
 > **Defender 경고가 뜨면**: "추가 정보" 클릭 후 "그래도 실행" 선택
 
-**터미널 1 — gitlings 실행:**
-```sh
-git clone https://github.com/...   # 강사가 URL 안내
-cd gitlings-ko
-./gitlings.exe          # watch mode 시작
-# 또는 바로 시작:
-./gitlings.exe 1
+## 시작하기
+
+터미널 1에서:
+
+```bash
+cd ~
+git clone <강사가 알려 준 주소> gitlings
+cd gitlings
+./gitlings.exe     # Windows
+./gitlings         # mac
 ```
 
-**터미널 2 — git 연습:**
-```sh
-cd ~/gitlings-work/01-first-commit
-git init
-git add words.md
-git commit -m "첫 커밋"
-# → 터미널 1에서 자동으로 채점됩니다 ✅
+켜면 연습 폴더 13개가 `~/gitlings-work/` 안에 만들어지고, 왼쪽에 문제 목록, 오른쪽에 문제 설명이 보입니다. 이미 만들어진 연습 폴더는 다시 켜도 그대로 남습니다.
+
+| 키 | 하는 일 |
+| --- | --- |
+| `↑` `↓` | 문제 고르기 |
+| **Enter** | 채점 |
+| **Tab** | 힌트 (누를 때마다 한 단계씩, 3단계까지) · **Esc**로 힌트 닫기 |
+| **Ctrl+R** | 지금 문제만 처음 상태로 (✅ 표시도 지워짐) |
+| **Ctrl+X** | 13문제 전체 초기화 |
+| **Ctrl+C** | 끝내기 |
+| 스페이스 / `b` | 문제 설명 스크롤 |
+
+> 위 키들은 **한글 입력 상태에서도** 동작합니다. 되돌리기·전체 초기화는 확인 질문에 영문 **`y`**를 눌러야만 실행됩니다(Enter는 '아니오').
+
+## 한 문제 푸는 흐름
+
+1. 터미널 1: 문제를 고른다. 오른쪽 아래에 `cd ~/gitlings-work/01-first-commit` 같은 명령이 보입니다
+2. 터미널 2: 그 명령으로 연습 폴더에 들어가서 git 명령으로 문제를 푼다
+3. 터미널 1: **Enter** — 통과하면 ✅, 아니면 무엇이 아직인지 알려 줍니다
+
+## 화면이 안 뜰 때 (명령으로 풀기)
+
+```bash
+./gitlings.exe list       # 목록 (mac은 ./gitlings)
+./gitlings.exe start 1    # 1번 연습 폴더 만들기 + 문제 보기
+./gitlings.exe check      # 채점
+./gitlings.exe hint       # 힌트
+./gitlings.exe reset      # 처음 상태로
 ```
-
----
-
-## watch mode 키
-
-| 키 | 동작 |
-|----|------|
-| `h` | 힌트 보기 (3단계) |
-| `n` | 다음 문제 |
-| `p` | 이전 문제 |
-| `r` | 현재 문제 초기화 |
-| `l` | 목록 보기 |
-| `q` | 종료 |
-
----
-
-## 보조 명령 (watch 없이 사용)
-
-| 명령 | 설명 |
-|------|------|
-| `gitlings list` | 문제 목록 · 통과 여부 |
-| `gitlings start <번호>` | N번 문제 시작 (watch 없이) |
-| `gitlings check` | 현재 문제 채점 |
-| `gitlings hint` | 힌트 보기 |
-| `gitlings reset` | 현재 문제 초기화 |
-| `gitlings help` | 도움말 |
 
 ---
 
@@ -95,7 +74,7 @@ git commit -m "첫 커밋"
 |------|------|-----------|
 | 01 | 첫 사진 | init · add · commit |
 | 02 | 골라서 찍기 | 파일 선택 add |
-| 03 | 프레임에서 빼기 | restore --staged |
+| 03 | 무대에서 내리기 | restore --staged |
 | 04 | 망친 수정 버리기 | restore |
 | 05 | 메시지 오타 | commit --amend |
 | 06 | 비밀이 섞였다 | .gitignore · rm --cached |
@@ -113,7 +92,7 @@ git commit -m "첫 커밋"
 
 ## 작업 폴더
 
-문제 폴더는 `~/gitlings-work/` 아래에 만들어집니다.  
+문제 폴더는 `~/gitlings-work/` 아래에 만들어집니다. 원격 저장소가 필요한 문제는 옆에 `<문제 폴더>.git-remote`도 만듭니다.  
 진행 상황은 `~/gitlings-work/.progress.json`에 저장됩니다.
 
 ---
@@ -121,5 +100,5 @@ git commit -m "첫 커밋"
 ## 출처 · 라이선스
 
 MIT License.  
-구조와 아이디어는 [rustlings](https://github.com/rust-lang/rustlings) (MIT),  
-[git-katas](https://github.com/eficode-academy/git-katas) (MIT)를 참고했습니다.
+분할 화면 구성은 [dockerlings](https://github.com/furkan/dockerlings)(MIT)를, 구조와 아이디어는 [rustlings](https://github.com/rust-lang/rustlings) (MIT),  
+[git-katas](https://github.com/eficode-academy/git-katas) (MIT)를 참고했습니다. 화면과 명령 체계는 같은 수업의 `shellings-ko`와 같습니다.

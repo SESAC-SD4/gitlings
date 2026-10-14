@@ -1,42 +1,37 @@
 package exercise
 
 import (
-	"gitlings-ko/internal/git"
+	"regexp"
 	"strings"
 )
 
-// Result는 check 결과다.
 type Result struct {
 	Passed  bool
-	Message string // 실패 메시지 또는 통과 메시지
+	Message string
 }
 
-// Exercise는 하나의 연습 문제를 나타낸다.
+func Pass(msg string) Result { return Result{Passed: true, Message: msg} }
+func Fail(msg string) Result { return Result{Message: msg} }
+
 type Exercise struct {
 	ID       int
-	Slug     string // "01-first-commit"
-	Name     string // "01 첫 사진"
+	Slug     string // "01-make-til"
+	Title    string // "01 TIL 폴더"
 	Optional bool
-	Desc     string
-	Hints    []string // 3단계 힌트
-	Setup    func(workDir string, g *git.Git) error
-	Check    func(workDir string, g *git.Git) (Result, error)
+	Prompt   string
+	Hints    []string
+	Setup    func(dir string) error
+	Check    func(dir string) Result
 }
 
-// WorkDir는 이 문제의 작업 디렉토리 절대 경로를 반환한다.
-func (e *Exercise) WorkDir(baseDir string) string {
-	return baseDir + "/" + e.Slug
-}
+var hintSep = regexp.MustCompile(`(?m)^---[ \t]*$`)
 
-// ParseHints는 빈 줄로 구분된 힌트 텍스트를 3단계 슬라이스로 파싱한다.
 func ParseHints(raw string) []string {
-	parts := strings.Split(raw, "\n\n")
-	var hints []string
-	for _, p := range parts {
-		h := strings.TrimSpace(p)
-		if h != "" {
-			hints = append(hints, h)
+	var out []string
+	for _, part := range hintSep.Split(strings.ReplaceAll(raw, "\r\n", "\n"), -1) {
+		if s := strings.TrimSpace(part); s != "" {
+			out = append(out, s)
 		}
 	}
-	return hints
+	return out
 }

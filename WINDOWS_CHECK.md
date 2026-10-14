@@ -38,7 +38,7 @@ Git Bash(mintty)는 UTF-8이 기본이므로 별도 설정 불필요.
 
 **확인**:
 ```sh
-./gitlings.exe 1
+./gitlings.exe start 1
 # 문제 설명이 한글로 올바르게 표시되는가?
 ```
 
@@ -50,12 +50,12 @@ PowerShell이나 cmd에서 직접 실행하면 한글이 깨질 수 있음.
 ## 3. 경로 · `~` 해석
 
 Git Bash에서 `~`는 `/c/Users/<이름>` (Unix 스타일)으로 해석됩니다.  
-Go의 `os.UserHomeDir()`는 `%USERPROFILE%`을 읽으므로 동일한 경로를 반환합니다.
+gitlings는 `$HOME`을 먼저 읽고, 없을 때만 `os.UserHomeDir()`(`%USERPROFILE%`)을 씁니다.
 
 **확인**:
 ```sh
-./gitlings.exe 1
-# 출력 예: 📁 ~/gitlings-work/01-first-commit
+./gitlings.exe start 1
+# 출력 예: cd ~/gitlings-work/01-first-commit
 # 실제 경로: C:\Users\<이름>\gitlings-work\01-first-commit
 ```
 
@@ -66,14 +66,14 @@ cd ~/gitlings-work/01-first-commit
 
 ---
 
-## 4. watch mode 전체 흐름
+## 4. 분할 화면(TUI) 전체 흐름
 
 터미널 두 개 열기.
 
-**터미널 1 — watch 실행:**
+**터미널 1 — 실행:**
 ```sh
 cd gitlings-ko
-./gitlings.exe 1
+./gitlings.exe
 ```
 
 **터미널 2 — git 연습:**
@@ -82,10 +82,16 @@ cd ~/gitlings-work/01-first-commit
 git init
 git add words.md
 git commit -m "첫 커밋"
-# → 터미널 1에서 자동 채점 ✅ 확인
 ```
+터미널 1에서 **Enter** → ✅ 확인
 
-**키 동작 확인**: `h`(힌트), `n`(다음), `r`(초기화), `q`(종료)
+- [ ] 켜자마자 `~/gitlings-work/` 안에 13개 연습 폴더(08·11번은 `.git-remote`도)가 생긴다. 처음 켤 때 몇 초 걸리는지 적는다
+- [ ] 화면이 그려지고 `↑` `↓` Enter Tab Esc(힌트 닫기) Ctrl+R Ctrl+X Ctrl+C가 모두 먹는다
+- [ ] **한글 입력 상태**에서도 Enter·Tab·Ctrl+R·Ctrl+X·화살표가 먹는다
+- [ ] 한글 제목·설명이 깨지지 않고, 왼쪽 목록과 오른쪽 칸의 테두리가 어긋나지 않는다
+- [ ] 시작할 때 이상한 문자(`]11;rgb:...` 같은 것)가 찍히거나 몇 초 멈추지 않는다(배경색 감지)
+- [ ] 확인 질문에서 Enter는 취소되고, 영문 `y`로만 되돌려진다
+- [ ] 다른 탭이 `~/gitlings-work/04-discard` **안에 있는 채로** Ctrl+R → `y`: 오류 없이 되돌려지고, 그 탭에서 `git status`가 바로 된다
 
 ---
 
@@ -95,7 +101,7 @@ git commit -m "첫 커밋"
 Windows 경로가 포함되므로 Git Bash에서 확인 필요.
 
 ```sh
-./gitlings.exe 8
+./gitlings.exe start 8
 # 다른 터미널에서:
 cd ~/gitlings-work/08-revert
 git remote -v
@@ -118,7 +124,6 @@ cd gitlings-ko
 
 ## 알려진 이슈 / 미확인 사항
 
-- [ ] Git Bash에서 ANSI 색상(굵기, 색) 올바르게 표시되는가?
-- [ ] watch mode의 화면 갱신(`\033[2J`)이 mintty에서 작동하는가?
+- [ ] Git Bash에서 색상(굵기, 색)이 올바르게 표시되는가?
 - [ ] Windows Defender가 자동 실행을 차단하는지
 - [ ] `git log --oneline` 등에서 한글 커밋 메시지 표시 여부

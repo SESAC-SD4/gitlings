@@ -1,7 +1,0 @@
-git reset은 커밋을 취소하는 명령입니다.
-옵션에 따라 변경이 어디에 남는지가 달라집니다.
-변경을 무대(staged)에 남기려면 어떤 옵션일까요?
-
-사용할 명령: git reset --soft HEAD~1
-
-git reset --soft HEAD~1

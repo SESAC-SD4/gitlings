@@ -1,7 +1,0 @@
-git add는 파일을 하나씩 지정할 수 있습니다.
-git add . 대신 파일 이름을 직접 적어 보세요.
-
-사용할 명령: git add [파일이름], git commit
-
-git add words.md
-git commit -m "단어 '표범' 추가"

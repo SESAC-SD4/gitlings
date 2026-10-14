@@ -4,21 +4,17 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"gitlings-ko/internal/workspace"
 )
 
 type Progress struct {
-	Passed      []int `json:"passed"`
-	LastStarted int   `json:"last_started"`
+	Passed      []int       `json:"passed"`
+	LastStarted int         `json:"last_started"`
+	HintLevel   map[int]int `json:"hint_level,omitempty"`
 }
 
-func dir() string {
-	home, _ := os.UserHomeDir()
-	return filepath.Join(home, "gitlings-work")
-}
-
-func file() string {
-	return filepath.Join(dir(), ".progress.json")
-}
+func file() string { return filepath.Join(workspace.Base(), ".progress.json") }
 
 func Load() (*Progress, error) {
 	data, err := os.ReadFile(file())
@@ -36,23 +32,30 @@ func Load() (*Progress, error) {
 }
 
 func (p *Progress) Save() error {
-	if err := os.MkdirAll(dir(), 0755); err != nil {
+	if err := os.MkdirAll(workspace.Base(), 0o755); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(file(), data, 0644)
+	return os.WriteFile(file(), data, 0o644)
 }
 
 func (p *Progress) MarkPassed(id int) {
+	if !p.IsPassed(id) {
+		p.Passed = append(p.Passed, id)
+	}
+}
+
+func (p *Progress) Unpass(id int) {
+	kept := p.Passed[:0]
 	for _, v := range p.Passed {
-		if v == id {
-			return
+		if v != id {
+			kept = append(kept, v)
 		}
 	}
-	p.Passed = append(p.Passed, id)
+	p.Passed = kept
 }
 
 func (p *Progress) IsPassed(id int) bool {
@@ -63,3 +66,17 @@ func (p *Progress) IsPassed(id int) bool {
 	}
 	return false
 }
+
+func (p *Progress) NextHint(id, max int) int {
+	if p.HintLevel == nil {
+		p.HintLevel = map[int]int{}
+	}
+	l := p.HintLevel[id] + 1
+	if l > max {
+		l = max
+	}
+	p.HintLevel[id] = l
+	return l
+}
+
+func (p *Progress) ResetHint(id int) { delete(p.HintLevel, id) }

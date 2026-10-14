@@ -1,8 +1,0 @@
-Git 저장소를 만들려면 폴더 안에서 초기화 명령을 실행해야 합니다.
-그 다음, 파일을 "무대(staging area)"에 올리고 사진을 찍으세요.
-
-사용할 명령: git init, git add, git commit
-
-git init
-git add words.md
-git commit -m "첫 번째 커밋"

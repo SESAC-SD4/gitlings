@@ -1,7 +1,0 @@
-이력을 보존하면서 커밋을 취소하는 명령이 있습니다.
-"되돌리다"라는 뜻의 영어 단어를 생각해 보세요.
-
-사용할 명령: git revert, git push
-
-git revert HEAD --no-edit
-git push origin main

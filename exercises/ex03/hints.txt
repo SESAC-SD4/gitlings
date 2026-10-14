@@ -1,7 +1,0 @@
-무대에서 파일을 내리는 명령이 있습니다.
-git restore에 특별한 옵션을 붙이면 staged 상태를 되돌릴 수 있습니다.
-
-사용할 명령: git restore --staged [파일이름], git commit
-
-git restore --staged notes.md
-git commit -m "단어 '범고래' 추가"
