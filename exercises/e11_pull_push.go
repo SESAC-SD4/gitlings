@@ -1,8 +1,6 @@
 package exercises
 
 import (
-	"os"
-
 	"gitlings-ko/internal/exercise"
 	"gitlings-ko/internal/git"
 )
@@ -40,10 +38,7 @@ func setupPullPush(dir string) error {
 
 	// 가짜 원격 bare 저장소
 	bareDir := dir + ".git-remote"
-	if err := os.MkdirAll(bareDir, 0o755); err != nil {
-		return err
-	}
-	if _, err := git.New(bareDir).Run("init", "--bare"); err != nil {
+	if _, err := git.InitBareMain(bareDir); err != nil {
 		return err
 	}
 	if _, err := g.Run("remote", "add", "origin", bareDir); err != nil {

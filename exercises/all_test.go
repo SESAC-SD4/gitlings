@@ -3,6 +3,7 @@ package exercises
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -64,4 +65,25 @@ func TestSetupNamesAreASCII(t *testing.T) {
 			return nil
 		})
 	}
+}
+
+// 학생 Git의 기본 브랜치가 master여도(Git for Windows 기본 설치 등) 모든 문제가 만들어져야 한다.
+func TestSetupWithDefaultBranchMaster(t *testing.T) {
+	cfg := filepath.Join(t.TempDir(), "gitconfig")
+	if err := os.WriteFile(cfg, []byte("[init]\n\tdefaultBranch = master\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("GIT_CONFIG_NOSYSTEM", "1")
+	t.Setenv("GIT_CONFIG_GLOBAL", cfg)
+	for _, ex := range All() {
+		t.Run(ex.Slug, func(t *testing.T) {
+			prepare(t, ex)
+		})
+	}
+	t.Run("11 pull 후 push하면 통과", func(t *testing.T) {
+		ex := ByID(11)
+		dir := prepare(t, ex)
+		sh(t, dir, "git pull --no-rebase --no-edit && git push origin main")
+		mustPass(t, ex, dir)
+	})
 }

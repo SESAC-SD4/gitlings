@@ -73,3 +73,20 @@ func splitLines(s string) []string {
 	}
 	return result
 }
+
+// InitBareMain은 가짜 원격으로 쓸 bare 저장소를 만들고 HEAD를 main으로 고정한다.
+// 학생의 init.defaultBranch가 master면 원격 HEAD가 없는 master를 가리켜,
+// 그 원격을 clone한 저장소가 main을 받지 못한다.
+func InitBareMain(dir string) (*Git, error) {
+	g := New(dir)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+	if _, err := g.Run("init", "--bare"); err != nil {
+		return nil, err
+	}
+	if _, err := g.Run("symbolic-ref", "HEAD", "refs/heads/main"); err != nil {
+		return nil, err
+	}
+	return g, nil
+}
